@@ -26,7 +26,7 @@ function ChatWindow() {
         };
 
         try {
-            const response = await fetch("https://chatterchamp-backend.onrender.com/api/chat", options);  // ✅ Replace this with your actual Render backend URL
+            const response = await fetch("https://chatterchamp-backend.onrender.com/api/chat", options);
             const res = await response.json();
             console.log(res);
             setReply(res.reply);
