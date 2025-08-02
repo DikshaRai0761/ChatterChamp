@@ -14,7 +14,7 @@ const allowedOrigins = [
     "https://chatter-champ.vercel.app"
 ];
 
-// ✅ CORS middleware (ONLY this, no manual headers)
+// ✅ CORS middleware with DELETE method allowed
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -23,9 +23,13 @@ app.use(cors({
             callback(new Error("Not allowed by CORS"));
         }
     },
-    methods: ['GET', 'POST'],
-    credentials: true
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 }));
+// ✅ Handle preflight OPTIONS requests globally
+app.options("*", cors());
 
 // ✅ Middlewares
 app.use(express.json());
@@ -53,4 +57,4 @@ const connectDB = async () => {
     }
 };
 
-connectDB();
+connectDB(); 
