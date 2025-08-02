@@ -5,28 +5,39 @@ import mongoose from "mongoose";
 import chatRoutes from "./routes/chat.js";
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
+// ✅ Allow both local + deployed frontend URLs
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://chatter-champ.vercel.app' 
+];
+
+// ✅ CORS middleware
 app.use(cors({
-    origin: 'https://chatter-champ-git-main-diksharai0761s-projects.vercel.app',
-    methods: ['GET', 'POST', 'DELETE', 'PUT'],
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
     credentials: true
 }));
 
+// Middleware
 app.use(express.json());
 
+// Routes
 app.use("/api", chatRoutes);
 
+// Server start + DB connect
 app.listen(PORT, () => {
-    console.log(`server running on ${PORT}`);
+    console.log(`✅ Server running on port ${PORT}`);
     connectDB();
 });
 
+// MongoDB connection
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGODB_URI);
-        console.log("Connected with Database!");
+        console.log("✅ Connected with MongoDB Database!");
     } catch (err) {
-        console.log("Failed to connect with Db", err);
+        console.error("❌ Failed to connect with MongoDB:", err);
     }
 };
