@@ -1,48 +1,56 @@
-import fetch from "node-fetch";
+import express from "express";
 import "dotenv/config";
+import cors from "cors";
+import mongoose from "mongoose";
+import chatRoutes from "./routes/chat.js";
 
-const getGeminiAPIResponse = async (message) => {
-    const options = {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-goog-api-key": process.env.GEMINI_API_KEY
-        },
-        body: JSON.stringify({
-            contents: [
-                {
-                    parts: [
-                        {
-                            text: message
-                        }
-                    ]
-                }
-            ]
-        })
-    };
+const app = express();
+const PORT = process.env.PORT || 8080;
 
-    try {
-        const response = await fetch(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-            options
-        );
+// ✅ Allowed frontend origins
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://chatter-champ.vercel.app"
+];
 
-        const data = await response.json();
-
-        console.log("✅ Gemini API raw response:", data);
-
-        if (data.error) {
-            console.error("❌ Gemini API Error:", data.error);
-            return `❌ Gemini Error: ${data.error.message || "Unknown error"}`;
+// ✅ CORS middleware (ONLY this, no manual headers)
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
         }
+    },
+    methods: ['GET', 'POST'],
+    credentials: true
+}));
 
-        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+// ✅ Middlewares
+app.use(express.json());
 
-        return reply?.trim() || "⚠️ Gemini did not return a valid response.";
+// ✅ Routes
+app.use("/api", chatRoutes);
+
+// ✅ Default route for root URL
+app.get("/", (req, res) => {
+    res.send("ChatterChamp Backend is Running 🚀");
+});
+
+// ✅ MongoDB connection and server start
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log("✅ Connected with MongoDB");
+
+        app.listen(PORT, () => {
+            console.log(`✅ Server running on port ${PORT}`);
+        });
     } catch (err) {
-        console.error("❌ Fetch Error:", err);
-        return "❌ Failed to connect to Gemini API.";
+        console.error("❌ Failed to connect DB", err);
+        process.exit(1);
     }
 };
 
-export default getGeminiAPIResponse;
+connectDB();
