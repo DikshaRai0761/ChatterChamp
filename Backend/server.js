@@ -14,7 +14,7 @@ const allowedOrigins = [
     "https://chatter-champ.vercel.app"
 ];
 
-// ✅ CORS middleware
+// ✅ CORS middleware (ONLY this, no manual headers)
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -27,22 +27,13 @@ app.use(cors({
     credentials: true
 }));
 
-// ✅ Optional extra CORS headers (good for debugging)
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Credentials", "true");
-    next();
-});
-
 // ✅ Middlewares
 app.use(express.json());
 
 // ✅ Routes
 app.use("/api", chatRoutes);
 
-// ✅ Default root route (to avoid Cannot GET /)
+// ✅ Default route for root URL
 app.get("/", (req, res) => {
     res.send("ChatterChamp Backend is Running 🚀");
 });
