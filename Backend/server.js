@@ -7,13 +7,14 @@ import chatRoutes from "./routes/chat.js";
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Allow CORS for frontend
+// ✅ Allowed origins
 const allowedOrigins = [
     "http://localhost:5173",
+    "http://localhost:5174",
     "https://chatter-champ.vercel.app"
 ];
 
-// CORS middleware
+// ✅ CORS middleware
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -26,7 +27,7 @@ app.use(cors({
     credentials: true
 }));
 
-// Manual CORS headers (extra safety)
+// ✅ Optional: Extra CORS headers for safety
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
     res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -35,24 +36,27 @@ app.use((req, res, next) => {
     next();
 });
 
-// Middleware
+// ✅ Middlewares
 app.use(express.json());
 
-// Routes
+// ✅ Routes
 app.use("/api", chatRoutes);
 
-// Start server and connect DB
-app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
-    connectDB();
-});
-
-// MongoDB
+// ✅ MongoDB connection and server start
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGODB_URI);
         console.log("✅ Connected with MongoDB");
+
+        // Start server only after DB connects
+        app.listen(PORT, () => {
+            console.log(`✅ Server running on port ${PORT}`);
+        });
     } catch (err) {
         console.error("❌ Failed to connect DB", err);
+        process.exit(1); // exit on failure
     }
 };
+
+// ✅ Start server
+connectDB();
